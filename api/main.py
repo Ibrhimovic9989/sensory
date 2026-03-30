@@ -228,6 +228,14 @@ async def audit_text(text: str = Form(...)):
         with open("./tmp/audit_text.txt", "w") as f:
             f.write(text)
 
+        # Pad short text to avoid word-matching issues in TRIBE v2's pipeline
+        padded = text.strip()
+        if len(padded.split()) < 15:
+            padded = padded + ". " + padded  # repeat to give enough words
+
+        with open("./tmp/audit_text.txt", "w") as f2:
+            f2.write(padded)
+
         events = model.get_events_dataframe(text_path="./tmp/audit_text.txt")
         nt_preds, segments = model.predict(events, verbose=False)
         nd_preds = nt_preds * scale + shift
