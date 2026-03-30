@@ -6,11 +6,28 @@ Takes video/audio/text of a space → analyzes sensory load per second
 Powered by TRIBE v2 brain encoding model + ABIDE-trained neurodiverse transform.
 """
 
+# Force CPU before anything imports torch
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = ""
+
+import torch
+# Patch torch.cuda so any .to("cuda") silently goes to CPU
+_original_to = torch.Tensor.to
+def _safe_to(self, *args, **kwargs):
+    if args and isinstance(args[0], (str, torch.device)):
+        dev = str(args[0])
+        if "cuda" in dev:
+            args = ("cpu",) + args[1:]
+    if "device" in kwargs and "cuda" in str(kwargs["device"]):
+        kwargs["device"] = "cpu"
+    return _original_to(self, *args, **kwargs)
+torch.Tensor.to = _safe_to
+torch.cuda.is_available = lambda: False
+
 import io
 import base64
 import json
 import logging
-import os
 from pathlib import Path
 
 import numpy as np
@@ -41,7 +58,6 @@ def get_model():
         from tribev2 import TribeModel
         device = "cuda" if torch.cuda.is_available() else "cpu"
         logger.info(f"Loading TRIBE v2 on {device}...")
-        os.environ["CUDA_VISIBLE_DEVICES"] = ""
         config_update = {
             "data.text_feature.device": "cpu",
             "data.audio_feature.device": "cpu",
