@@ -219,12 +219,21 @@ async def audit_video(file: UploadFile = File(...)):
         clip.close()
 
         # Video + Audio only -- no text transcription needed for sensory audit
-        # We care about visual stimuli and sound patterns, not speech content
         from tribev2.demo_utils import get_audio_and_text_events
         import pandas as pd
+
+        # Trim video to max 15 seconds and reduce frame rate for faster processing
+        from moviepy import VideoFileClip as VFC2
+        trimmed_path = "./tmp/audit_trimmed.mp4"
+        c = VFC2(video_path)
+        max_dur = min(c.duration, 15)
+        c.subclipped(0, max_dur).write_videofile(trimmed_path, fps=2, audio=True, logger=None)
+        c.close()
+        logger.info(f"Trimmed video: {max_dur:.1f}s at 2fps")
+
         video_event = {
             "type": "Video",
-            "filepath": video_path,
+            "filepath": trimmed_path,
             "start": 0,
             "timeline": "default",
             "subject": "default",
