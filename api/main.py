@@ -207,18 +207,19 @@ async def audit_video(file: UploadFile = File(...)):
         try:
             events = model.get_events_dataframe(video_path=video_path)
         except Exception as word_err:
-            # If word matching fails, use audio-only mode (skip text extraction)
-            logger.warning(f"Full pipeline failed ({word_err}), falling back to audio-only")
+            # If word/text matching fails, keep video + audio but skip text
+            logger.warning(f"Full pipeline failed ({word_err}), falling back to video+audio only")
             from tribev2.demo_utils import get_audio_and_text_events
             import pandas as pd
-            audio_event = {
+            video_event = {
                 "type": "Video",
                 "filepath": video_path,
                 "start": 0,
                 "timeline": "default",
                 "subject": "default",
             }
-            events = get_audio_and_text_events(pd.DataFrame([audio_event]), audio_only=True)
+            # audio_only=True skips text extraction but keeps Video and Audio events
+            events = get_audio_and_text_events(pd.DataFrame([video_event]), audio_only=True)
 
         nt_preds, segments = model.predict(events, verbose=False)
         nd_preds = nt_preds * scale + shift
