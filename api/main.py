@@ -204,7 +204,22 @@ async def audit_video(file: UploadFile = File(...)):
         duration = clip.duration
         clip.close()
 
-        events = model.get_events_dataframe(video_path=video_path)
+        try:
+            events = model.get_events_dataframe(video_path=video_path)
+        except Exception as word_err:
+            # If word matching fails, use audio-only mode (skip text extraction)
+            logger.warning(f"Full pipeline failed ({word_err}), falling back to audio-only")
+            from tribev2.demo_utils import get_audio_and_text_events
+            import pandas as pd
+            audio_event = {
+                "type": "Video",
+                "filepath": video_path,
+                "start": 0,
+                "timeline": "default",
+                "subject": "default",
+            }
+            events = get_audio_and_text_events(pd.DataFrame([audio_event]), audio_only=True)
+
         nt_preds, segments = model.predict(events, verbose=False)
         nd_preds = nt_preds * scale + shift
 
@@ -228,15 +243,28 @@ async def audit_text(text: str = Form(...)):
         with open("./tmp/audit_text.txt", "w") as f:
             f.write(text)
 
-        # Pad short text to avoid word-matching issues in TRIBE v2's pipeline
+        # Pad short text to avoid word-matching issues
         padded = text.strip()
-        if len(padded.split()) < 15:
-            padded = padded + ". " + padded  # repeat to give enough words
+        if len(padded.split()) < 20:
+            padded = padded + ". " + padded
 
         with open("./tmp/audit_text.txt", "w") as f2:
             f2.write(padded)
 
-        events = model.get_events_dataframe(text_path="./tmp/audit_text.txt")
+        try:
+            events = model.get_events_dataframe(text_path="./tmp/audit_text.txt")
+        except Exception as word_err:
+            logger.warning(f"Text pipeline failed ({word_err}), retrying with simpler text")
+            # Simplify: just use TTS audio without word matching
+            from tribev2.demo_utils import get_audio_and_text_events
+            from gtts import gTTS
+            import pandas as pd
+            audio_path = "./tmp/audit_audio.mp3"
+            tts = gTTS(padded, lang="en")
+            tts.save(audio_path)
+            audio_event = {"type": "Audio", "filepath": audio_path, "start": 0, "timeline": "default", "subject": "default"}
+            events = get_audio_and_text_events(pd.DataFrame([audio_event]), audio_only=True)
+
         nt_preds, segments = model.predict(events, verbose=False)
         nd_preds = nt_preds * scale + shift
 
