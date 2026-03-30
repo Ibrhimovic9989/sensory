@@ -47,6 +47,7 @@ def get_model():
             config_update = {
                 "data.text_feature.device": "cpu",
                 "data.audio_feature.device": "cpu",
+                "data.video_feature.device": "cpu",
                 "data.num_workers": 0,
             }
         _model = TribeModel.from_pretrained(
