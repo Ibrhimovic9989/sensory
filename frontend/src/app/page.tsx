@@ -144,21 +144,21 @@ export default function Home() {
           {/* Score */}
           <S>
             <div className="max-w-[1024px] mx-auto card p-6">
-              <div className="flex items-center gap-8">
+              <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-8">
                 <div className="score-ring flex-shrink-0" style={{ background: `conic-gradient(${scoreColor} ${score * 3.6}deg, var(--bg) 0deg)` }}>
                   <div className="w-[120px] h-[120px] rounded-full bg-[var(--card)] flex items-center justify-center flex-col">
                     <span className="text-[32px] font-bold" style={{ color: scoreColor }}>{score}</span>
                     <span className="text-[10px] text-[var(--muted)]">/ 100</span>
                   </div>
                 </div>
-                <div className="flex-1">
-                  <h2 className="reveal text-[22px] tracking-tight mb-2">Accessibility Score</h2>
-                  <p className="reveal reveal-delay-1 text-[14px] text-[var(--muted)] font-light mb-5">
+                <div className="flex-1 w-full">
+                  <h2 className="reveal text-[20px] sm:text-[22px] tracking-tight mb-2 text-center sm:text-left">Accessibility Score</h2>
+                  <p className="reveal reveal-delay-1 text-[13px] sm:text-[14px] text-[var(--muted)] font-light mb-5 text-center sm:text-left">
                     {score > 70 ? "This space is reasonably autism-friendly with minor improvements needed."
                       : score > 40 ? "Moderate sensory challenges detected. Several improvements recommended."
                       : "Significant sensory barriers. Major changes needed."}
                   </p>
-                  <div className="reveal reveal-delay-2 grid grid-cols-4 gap-3">
+                  <div className="reveal reveal-delay-2 grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {[
                       [result.summary.high_stress_moments, "High Stress", "var(--danger)"],
                       [result.summary.moderate_stress_moments, "Moderate", "var(--warning)"],
