@@ -72,13 +72,19 @@ def get_model():
 
 
 def get_nd_transform():
+    """Load ND transform. Tries v4 (FDR-corrected) first, falls back to v3."""
     global _nd_transform
     if _nd_transform is None:
         import torch
         from huggingface_hub import hf_hub_download
-        path = hf_hub_download("Ibrahim9989/neurobrain-nd-transform", "neurodiverse_transform_v3.pt")
-        _nd_transform = torch.load(path, map_location="cpu", weights_only=True)
-        logger.info("ND transform loaded (%d ASD, %d TD)", _nd_transform["n_asd"], _nd_transform["n_td"])
+        try:
+            path = hf_hub_download("Ibrahim9989/neurobrain-nd-transform", "neurodiverse_transform_v4.pt")
+            _nd_transform = torch.load(path, map_location="cpu", weights_only=False)
+            logger.info("ND transform v4 loaded (FDR-corrected, %d ASD, %d TD)", _nd_transform["n_asd"], _nd_transform["n_td"])
+        except Exception:
+            path = hf_hub_download("Ibrahim9989/neurobrain-nd-transform", "neurodiverse_transform_v3.pt")
+            _nd_transform = torch.load(path, map_location="cpu", weights_only=True)
+            logger.info("ND transform v3 loaded (uncorrected, %d ASD, %d TD)", _nd_transform["n_asd"], _nd_transform["n_td"])
     return _nd_transform
 
 
