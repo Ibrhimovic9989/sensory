@@ -320,9 +320,12 @@ function Nav() {
 function Footer() {
   return (
     <footer className="border-t border-[var(--border)] py-5 px-6">
-      <div className="max-w-[1024px] mx-auto flex items-center justify-between text-[11px] text-[var(--muted)]">
-        <span>Sensory Audit by Leeza Care</span>
-        <a href="https://mind.new" className="hover:text-white transition">mind.new</a>
+      <div className="max-w-[1024px] mx-auto">
+        <p className="text-[10px] text-[var(--muted)]/50 mb-4 leading-relaxed font-light">Sensory Audit is a research tool for accessibility design. It is not a diagnostic medical device. Stress scores are population-level estimates. If concerned about a child, consult a developmental pediatrician.</p>
+        <div className="flex items-center justify-between text-[11px] text-[var(--muted)]">
+          <span>Sensory Audit by Leeza Care</span>
+          <a href="https://mind.new" className="hover:text-white transition">mind.new</a>
+        </div>
       </div>
     </footer>
   );
